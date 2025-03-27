@@ -1,0 +1,43 @@
+.App {
+  text-align: center;
+  padding: 50px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+div {
+  margin-bottom: 15px;
+}
+
+label {
+  margin-right: 10px;
+}
+
+input {
+  padding: 5px;
+}
+
+button {
+  padding: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+pre {
+  margin-top: 20px;
+  text-align: left;
+  background-color: #f8f9fa;
+  padding: 10px;
+  border-radius: 5px;
+}

@@ -1,0 +1,36 @@
+
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+  backend:
+    build: ./backend
+    ports:
+      - "4000:4000"
+    depends_on:
+      - vault
+    networks:
+      - app-network
+
+  vault:
+    image: hashicorp/vault:latest
+    ports:
+      - "8201:8200"
+    cap_add:
+      - IPC_LOCK
+    environment:
+      - VAULT_DEV_ROOT_TOKEN_ID=myroot
+      - VAULT_ADDR=http://0.0.0.0:8200
+    command: server -dev -dev-root-token-id="myroot"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
