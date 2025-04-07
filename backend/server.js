@@ -10,9 +10,6 @@ const app = express();
 app.use(express.json());
 app.use(cors()); // Add this line to enable CORS for all origins
 
-// Optionally, restrict to specific origin:
-// app.use(cors({ origin: 'http://192.168.0.15:3000' }));
-
 const users = {
   'user1': { password: 'pass1', rights: ['read_secret1'] },
   'user2': { password: 'pass2', rights: ['read_secret2'] },
