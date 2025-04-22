@@ -6,18 +6,19 @@ const vault = require('node-vault')({
   endpoint: 'http://vault:8200',
   token: 'myroot',
 });
+const { Pool } = require('pg');
+const bcrypt = require('bcrypt');
 
 const app = express();
 app.use(express.json());
 app.use(cors({ origin: 'http://192.168.0.15:3000' }));
 
-const secretKey = 'your-secret-key'; // In production, store this in Vault or env vars
+const secretKey = 'your-secret-key'; // In production, store in Vault or env vars
 
-// Mock users (replace with a DB in production)
-const users = {
-  'admin': { password: 'adminpass', rights: ['read_db-cred', 'write_db-cred', 'read_api-key'] },
-  'user1': { password: 'pass1', rights: ['read_db-cred'] },
-};
+// Database connection
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL || 'postgres://user:password@postgres:5432/secrets_db',
+});
 
 // Middleware to verify JWT
 const authenticateToken = (req, res, next) => {
@@ -33,16 +34,23 @@ const authenticateToken = (req, res, next) => {
 };
 
 // Login endpoint: Issue JWT
-app.post('/auth/login', (req, res) => {
+app.post('/auth/login', async (req, res) => {
   const { username, password } = req.body;
-  const user = users[username];
 
-  if (!user || user.password !== password) {
-    return res.status(401).json({ error: 'Invalid credentials' });
+  try {
+    const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+    const user = result.rows[0];
+
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    const token = jwt.sign({ username: user.username, rights: user.rights }, secretKey, { expiresIn: '1h' });
+    res.json({ token });
+  } catch (error) {
+    console.error('Database error:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
-
-  const token = jwt.sign({ username, rights: user.rights }, secretKey, { expiresIn: '1h' });
-  res.json({ token });
 });
 
 // Get secrets endpoint: Fetch user's authorized secrets
@@ -78,5 +86,22 @@ app.post('/secrets', authenticateToken, async (req, res) => {
     res.status(500).json({ error: 'Failed to add secret' });
   }
 });
+
+// Initialize database (run once on startup)
+const initDb = async () => {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        username VARCHAR(50) PRIMARY KEY,
+        password VARCHAR(100) NOT NULL,
+        rights TEXT[] NOT NULL
+      );
+    `);
+    console.log('Database initialized');
+  } catch (error) {
+    console.error('Database init error:', error);
+  }
+};
+initDb();
 
 app.listen(4000, () => console.log('Backend running on port 4000'));

@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   frontend:
     build: ./frontend
@@ -15,21 +14,42 @@ services:
       - "4000:4000"
     depends_on:
       - vault
+      - postgres
+    environment:
+      - DATABASE_URL=postgres://user:password@postgres:5432/secrets_db
     networks:
       - app-network
 
   vault:
     image: hashicorp/vault:latest
     ports:
-      - "8201:8200"
+      - "8202:8200" # Host:8202 -> Container:8200
     cap_add:
       - IPC_LOCK
     environment:
-      - VAULT_DEV_ROOT_TOKEN_ID=myroot
       - VAULT_ADDR=http://0.0.0.0:8200
-    command: server -dev -dev-root-token-id="myroot"
+      - VAULT_API_ADDR=http://vault:8200
+    volumes:
+      - vault_data:/vault/file
+      - ./vault/config:/vault/config:ro
+    command: server -config=/vault/config/config.hcl
     networks:
       - app-network
+
+  postgres:
+    image: postgres:15
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=secrets_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+volumes:
+  vault_data:
+  postgres_data:
 
 networks:
   app-network:
