@@ -3,8 +3,8 @@ const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const vault = require('node-vault')({
   apiVersion: 'v1',
-  endpoint: 'http://vault:8200',
-  token: 'myroot',
+  endpoint: 'http://vault:8400',
+  token: 'myroot', // Update later with root token
 });
 const { Pool } = require('pg');
 const bcrypt = require('bcrypt');
@@ -13,14 +13,12 @@ const app = express();
 app.use(express.json());
 app.use(cors({ origin: 'http://192.168.0.15:3000' }));
 
-const secretKey = 'your-secret-key'; // In production, store in Vault or env vars
+const secretKey = 'your-secret-key';
 
-// Database connection
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL || 'postgres://user:password@postgres:5432/secrets_db',
 });
 
-// Middleware to verify JWT
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -33,7 +31,6 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
-// Login endpoint: Issue JWT
 app.post('/auth/login', async (req, res) => {
   const { username, password } = req.body;
 
@@ -53,7 +50,6 @@ app.post('/auth/login', async (req, res) => {
   }
 });
 
-// Get secrets endpoint: Fetch user's authorized secrets
 app.get('/secrets', authenticateToken, async (req, res) => {
   try {
     const secrets = {};
@@ -71,7 +67,6 @@ app.get('/secrets', authenticateToken, async (req, res) => {
   }
 });
 
-// Add secret endpoint: Admin-only
 app.post('/secrets', authenticateToken, async (req, res) => {
   const { path, value } = req.body;
   if (!req.user.rights.includes(`write_${path}`)) {
@@ -87,20 +82,24 @@ app.post('/secrets', authenticateToken, async (req, res) => {
   }
 });
 
-// Initialize database (run once on startup)
 const initDb = async () => {
-  try {
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS users (
-        username VARCHAR(50) PRIMARY KEY,
-        password VARCHAR(100) NOT NULL,
-        rights TEXT[] NOT NULL
-      );
-    `);
-    console.log('Database initialized');
-  } catch (error) {
-    console.error('Database init error:', error);
+  for (let i = 0; i < 5; i++) {
+    try {
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS users (
+          username VARCHAR(50) PRIMARY KEY,
+          password VARCHAR(100) NOT NULL,
+          rights TEXT[] NOT NULL
+        );
+      `);
+      console.log('Database initialized');
+      return;
+    } catch (error) {
+      console.error('Database init attempt', i + 1, 'failed:', error);
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    }
   }
+  console.error('Failed to initialize database after retries');
 };
 initDb();
 
