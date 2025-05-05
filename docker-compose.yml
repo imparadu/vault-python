@@ -19,6 +19,7 @@ services:
         condition: service_started
     environment:
       - DATABASE_URL=postgres://user:password@postgres:5432/secrets_db
+      - JWT_SECRET=bXlzZWNyZXRrZXk5234567890abcdef1234567890abcdef
     networks:
       - app-network
 
@@ -29,8 +30,8 @@ services:
     cap_add:
       - IPC_LOCK
     volumes:
-      - vault_data:/vault/file
-      - ./vault/config/vault.hcl:/etc/vault.d/vault.hcl # <--- FIXED
+      - ./vault_data:/vault/file
+      - ./vault/config/vault.hcl:/etc/vault.d/vault.hcl
     command: server -config=/etc/vault.d/vault.hcl
     environment:
       - VAULT_LOG_LEVEL=debug

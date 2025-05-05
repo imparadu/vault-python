@@ -1,0 +1,19 @@
+/ # vault operator init
+Unseal Key 1: kfzJml1fKbU2uottBkDqmGG99ezO8wZmbw9CHINb+fuM
+Unseal Key 2: 6wymE+fTi5ikeB5AqzMPgojfGyB3ueV9u63IkJHto8OL
+Unseal Key 3: 6PHDKWiZzO1ECuvBkVQJKfBLvta0t0U2mTcPiLgBCpZs
+Unseal Key 4: vCSMib5GubfSWh3wD4aIF+1myzQSjjlQGlQurdq2pgzl
+Unseal Key 5: vbJ4iJnzhmCeOX6oP0db+kJzRdOIm9lx+/5hLFUXAWUr
+
+Initial Root Token: hvs.J3XEaoViEcaHYxZN16O4ADtb
+
+
+storage "file" {
+  path = "/vault/file"
+}
+listener "tcp" {
+  address = "0.0.0.0:8300"
+  tls_disable = true
+}
+api_addr = "http://0.0.0.0:8300"
+disable_mlock = true
