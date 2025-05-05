@@ -4,7 +4,7 @@ const cors = require('cors');
 const vault = require('node-vault')({
   apiVersion: 'v1',
   endpoint: 'http://vault:8300',
-  token: 'hvs.J3XEaoViEcaHYxZN16O4ADtb', // Replace with new Vault root token
+  token: 'hvs.qOL06AMZceYi8GdP3TOZ50kH', // Replace with new Vault root token
 });
 const { Pool } = require('pg');
 const { Issuer } = require('openid-client');
