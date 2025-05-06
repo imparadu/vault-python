@@ -5,7 +5,17 @@ const Login: React.FC = () => {
   const { oktaAuth, authState } = useOktaAuth();
 
   const login = async () => {
-    await oktaAuth.signInWithRedirect();
+    try {
+      console.log('Initiating login with config:', {
+        redirectUri: oktaAuth.options.redirectUri,
+        pkce: oktaAuth.options.pkce,
+        scopes: oktaAuth.options.scopes,
+        responseType: oktaAuth.options.responseType,
+      });
+      await oktaAuth.signInWithRedirect();
+    } catch (error) {
+      console.error('Okta login error:', error);
+    }
   };
 
   if (!authState) return <div>Loading...</div>;

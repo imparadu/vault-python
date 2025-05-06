@@ -6,6 +6,7 @@ import { Security, LoginCallback, SecureRoute } from '@okta/okta-react';
 import Login from './Login';
 import Secrets from './Secrets';
 import AddSecret from './AddSecret';
+import CustomLoginCallback from './CustomLoginCallback';
 
 const oktaAuth = new OktaAuth({
   issuer: process.env.REACT_APP_OKTA_ISSUER || 'http://default-issuer-url',
@@ -19,6 +20,15 @@ console.log('Okta Config:', {
   clientId: process.env.REACT_APP_OKTA_CLIENT_ID,
   redirectUri: process.env.REACT_APP_OKTA_REDIRECT_URI,
   pkce: oktaAuth.options.pkce,
+  scopes: ['openid', 'email', 'profile'],
+  responseType: ['code'], // Explicitly use authorization code flow
+});
+
+oktaAuth.token.getWithRedirect({
+  scopes: ['openid', 'email', 'profile'],
+  responseType: 'code',
+}).catch(error => {
+  console.error('Token exchange error:', error);
 });
 
 function App() {
@@ -31,8 +41,8 @@ function App() {
         }}
       >
         <Routes>
-          <Route path="/" element={<Login />} />
-          <Route path="/login/callback" element={<LoginCallback />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/login/callback" element={<CustomLoginCallback />} />
           <Route path="/secrets" element={<SecureRoute element={<Secrets />} />} />
           <Route path="/add-secret" element={<SecureRoute element={<AddSecret />} />} />
         </Routes>
