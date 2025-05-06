@@ -23,6 +23,7 @@ const oktaJwtVerifier = new OktaJwtVerifier({
 
 // Middleware to verify token and attach user info
 const authenticate = async (req, res, next) => {
+  console.log('Authenticating request with token:', req.headers.authorization);
   const authHeader = req.headers.authorization || '';
   const match = authHeader.match(/Bearer (.+)/);
   if (!match) return res.status(401).json({ error: 'Missing token' });

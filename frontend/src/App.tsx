@@ -14,6 +14,13 @@ const oktaAuth = new OktaAuth({
   pkce: true, // <-- Optional, but best practice for SPA security
 });
 
+console.log('Okta Config:', {
+  issuer: process.env.REACT_APP_OKTA_ISSUER,
+  clientId: process.env.REACT_APP_OKTA_CLIENT_ID,
+  redirectUri: process.env.REACT_APP_OKTA_REDIRECT_URI,
+  pkce: oktaAuth.options.pkce,
+});
+
 function App() {
   return (
     <Router>
