@@ -1,62 +1,52 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useOktaAuth } from '@okta/okta-react';
 
 const AddSecret: React.FC = () => {
+  const { oktaAuth } = useOktaAuth();
   const [path, setPath] = useState('');
   const [value, setValue] = useState('');
-  const [message, setMessage] = useState<string | null>(null);
-  const navigate = useNavigate();
+  const [message, setMessage] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('http://192.168.0.15:4000/secrets', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ path, value }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setMessage('Secret added successfully');
-        setTimeout(() => navigate('/secrets'), 1000);
-      } else {
-        setMessage(data.error || 'Failed to add secret');
-      }
-    } catch (err) {
-      setMessage('Failed to connect to backend');
+    const accessToken = await oktaAuth.getAccessToken();
+
+    const res = await fetch('http://localhost:3001/secrets', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({ path, value }),
+    });
+
+    if (res.ok) {
+      setMessage('Secret added!');
+    } else {
+      const err = await res.json();
+      setMessage(`Error: ${err.error}`);
     }
   };
 
   return (
     <div>
-      <h2>Add New Secret</h2>
+      <h2>Add a Secret</h2>
       <form onSubmit={handleSubmit}>
-        <div>
-          <label>Secret Name:</label>
-          <input
-            type="text"
-            value={path}
-            onChange={(e) => setPath(e.target.value)}
-            placeholder="e.g., db-cred"
-          />
-        </div>
-        <div>
-          <label>Value:</label>
-          <input
-            type="text"
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            placeholder="Enter secret value"
-          />
-        </div>
+        <input
+          type="text"
+          placeholder="Secret path"
+          value={path}
+          onChange={(e) => setPath(e.target.value)}
+        />
+        <input
+          type="text"
+          placeholder="Secret value"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+        />
         <button type="submit">Add Secret</button>
-        <button onClick={() => navigate('/secrets')}>Back</button>
       </form>
-      {message && <pre>{message}</pre>}
+      <p>{message}</p>
     </div>
   );
 };

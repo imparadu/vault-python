@@ -1,64 +1,43 @@
+version: '3.8'
+
 services:
-  frontend:
-    build: ./frontend
+  vault:
+    image: hashicorp/vault:1.19.0
     ports:
-      - "80:3000"
-    depends_on:
-      - backend
-    networks:
-      - app-network
+      - "8300:8300"
+    environment:
+      - VAULT_DEV_ROOT_TOKEN_ID=root
+    volumes:
+      - vault-data:/vault/file
 
   backend:
     build: ./backend
     ports:
-      - "4000:4000"
+      - "3001:3001"
     depends_on:
-      postgres:
-        condition: service_healthy
-      vault:
-        condition: service_started
-    environment:
-      - DATABASE_URL=postgres://user:password@postgres:5432/secrets_db
-      - JWT_SECRET=bXlzZWNyZXRrZXk5234567890abcdef1234567890abcdef
-    networks:
-      - app-network
+      - vault
 
-  vault:
-    image: hashicorp/vault:latest
+  frontend:
+    build: ./frontend
     ports:
-      - "8300:8300"
-    cap_add:
-      - IPC_LOCK
-    volumes:
-      - ./vault_data:/vault/file
-      - ./vault/config/vault.hcl:/etc/vault.d/vault.hcl
-    command: server -config=/etc/vault.d/vault.hcl
+      - "3000:3000"
     environment:
-      - VAULT_LOG_LEVEL=debug
-    networks:
-      - app-network
-
-  postgres:
-    image: postgres:15
-    environment:
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=secrets_db
+      - HTTPS=true
+      - SSL_CRT_FILE=/certs/certificate.crt
+      - SSL_KEY_FILE=/certs/private.key
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ./certs:/certs  # Mount the certs folder to the frontend container
+    command: >
+      sh -c "HTTPS=true SSL_CRT_FILE=/certs/certificate.crt SSL_KEY_FILE=/certs/private.key npm start"
+    depends_on:
+      - backend
     networks:
-      - app-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U user -d secrets_db"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
+      - default
 
 volumes:
-  vault_data:
-  postgres_data:
+  vault-data:
 
 networks:
-  app-network:
-    driver: bridge
-    name: vault-app-network
+  default:
+    name: vault-net
+    external: true

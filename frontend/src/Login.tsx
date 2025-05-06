@@ -1,26 +1,24 @@
-import React, { useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import React from 'react';
+import { useOktaAuth } from '@okta/okta-react';
 
 const Login: React.FC = () => {
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const { oktaAuth, authState } = useOktaAuth();
 
-  useEffect(() => {
-    const token = searchParams.get('token');
-    if (token) {
-      localStorage.setItem('token', token);
-      navigate('/secrets');
-    }
-  }, [searchParams, navigate]);
-
-  const login = () => {
-    window.location.href = 'http://192.168.0.15:4000/auth/login';
+  const login = async () => {
+    await oktaAuth.signInWithRedirect();
   };
+
+  if (!authState) return <div>Loading...</div>;
+
+  if (authState.isAuthenticated) {
+    window.location.replace('/secrets');
+    return null;
+  }
 
   return (
     <div>
-      <h2>Login with Okta</h2>
-      <button onClick={login}>Login</button>
+      <h2>Welcome to Hello Vault</h2>
+      <button onClick={login}>Login with Okta</button>
     </div>
   );
 };

@@ -1,50 +1,36 @@
-import React, { useEffect, useState } from 'react';
-import './App.css';
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { OktaAuth, toRelativeUrl } from '@okta/okta-auth-js';
+import { Security, LoginCallback, SecureRoute } from '@okta/okta-react';
+
+import Login from './Login';
+import Secrets from './Secrets';
+import AddSecret from './AddSecret';
+
+const oktaAuth = new OktaAuth({
+  issuer: process.env.REACT_APP_OKTA_ISSUER || 'http://default-issuer-url',
+  clientId: process.env.REACT_APP_OKTA_CLIENT_ID,
+  redirectUri: process.env.REACT_APP_OKTA_REDIRECT_URI,
+  pkce: true, // <-- Optional, but best practice for SPA security
+});
 
 function App() {
-  const [secrets, setSecrets] = useState(null);
-
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('token');
-    if (token) {
-      localStorage.setItem('token', token);
-      window.history.replaceState({}, document.title, '/');
-    }
-  }, []);
-
-  const login = () => {
-    window.location.href = 'http://192.168.0.15:4000/auth/login';
-  };
-
-  const fetchSecrets = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        console.error('No token found');
-        return;
-      }
-      const response = await fetch('http://192.168.0.15:4000/secrets', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const data = await response.json();
-      setSecrets(data);
-    } catch (error) {
-      console.error('Error fetching secrets:', error);
-    }
-  };
-
   return (
-    <div className="App">
-      <h1>Vault Demo</h1>
-      <button onClick={login}>Login</button>
-      <button onClick={fetchSecrets}>Fetch Secrets</button>
-      {secrets && (
-        <pre>{JSON.stringify(secrets, null, 2)}</pre>
-      )}
-    </div>
+    <Router>
+      <Security
+        oktaAuth={oktaAuth}
+        restoreOriginalUri={async (_oktaAuth, originalUri) => {
+          window.location.replace(toRelativeUrl(originalUri || '/', window.location.origin));
+        }}
+      >
+        <Routes>
+          <Route path="/" element={<Login />} />
+          <Route path="/login/callback" element={<LoginCallback />} />
+          <Route path="/secrets" element={<SecureRoute element={<Secrets />} />} />
+          <Route path="/add-secret" element={<SecureRoute element={<AddSecret />} />} />
+        </Routes>
+      </Security>
+    </Router>
   );
 }
 

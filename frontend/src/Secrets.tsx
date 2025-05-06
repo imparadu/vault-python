@@ -1,64 +1,28 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useOktaAuth } from '@okta/okta-react';
 
 const Secrets: React.FC = () => {
-  const [secrets, setSecrets] = useState<Record<string, string>>({});
-  const [error, setError] = useState<string | null>(null);
-  const navigate = useNavigate();
+  const { oktaAuth } = useOktaAuth();
+  const [secrets, setSecrets] = useState<{ [key: string]: any }>({});
 
   useEffect(() => {
     const fetchSecrets = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const res = await fetch('http://192.168.0.15:4000/secrets', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-        const data = await res.json();
-        if (res.ok) {
-          setSecrets(data);
-        } else {
-          setError(data.error || 'Failed to fetch secrets');
-        }
-      } catch (err) {
-        setError('Failed to connect to backend');
-      }
+      const accessToken = await oktaAuth.getAccessToken();
+      const res = await fetch('http://localhost:3001/secrets', {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      const data = await res.json();
+      setSecrets(data);
     };
     fetchSecrets();
-  }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    navigate('/login');
-  };
+  }, [oktaAuth]);
 
   return (
     <div>
       <h2>Your Secrets</h2>
-      <button onClick={() => navigate('/add-secret')}>Add Secret</button>
-      <button onClick={handleLogout}>Logout</button>
-      {error ? (
-        <pre>{error}</pre>
-      ) : (
-        <table>
-          <thead>
-            <tr>
-              <th>Secret Name</th>
-              <th>Value</th>
-            </tr>
-          </thead>
-          <tbody>
-            {Object.entries(secrets).map(([name, value]) => (
-              <tr key={name}>
-                <td>{name}</td>
-                <td>{value}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+      <pre>{JSON.stringify(secrets, null, 2)}</pre>
     </div>
   );
 };
