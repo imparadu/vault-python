@@ -9,7 +9,8 @@ services:
       - VAULT_DEV_ROOT_TOKEN_ID=root
     volumes:
       - vault-data:/vault/file
-
+    cap_add:
+      - IPC_LOCK
   backend:
     build: ./backend
     ports:
