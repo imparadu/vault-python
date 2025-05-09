@@ -1,8 +1,7 @@
 import { OktaAuth } from "@okta/okta-auth-js";
 import { Security, useOktaAuth } from "@okta/okta-react";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
-import { ReactElement } from "react";
-import Login from "./Login";
+import { ReactElement, useEffect } from "react";
 import CustomLoginCallback from "./CustomLoginCallback";
 
 const oktaAuth = new OktaAuth({
@@ -50,10 +49,29 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { authState } = useOktaAuth();
   console.log("ProtectedRoute authState:", JSON.stringify(authState, null, 2));
   if (!authState) return <div>Loading...</div>;
-  return authState.isAuthenticated ? (
-    children
-  ) : (
-    <Navigate to="/login" replace />
+  return authState.isAuthenticated ? children : <Navigate to="/" replace />;
+};
+
+const Home = () => {
+  const { oktaAuth, authState } = useOktaAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!authState) return; // Wait for authState to load
+    if (!authState.isAuthenticated) {
+      console.log("User is not authenticated, redirecting to Okta");
+      oktaAuth.signInWithRedirect();
+    } else {
+      console.log("User is authenticated, redirecting to /secrets");
+      navigate("/secrets", { replace: true });
+    }
+  }, [authState, oktaAuth, navigate]);
+
+  if (!authState || !authState.isAuthenticated) return <div>Loading...</div>;
+  return (
+    <div>
+      <h2>Home</h2>
+    </div>
   );
 };
 
@@ -62,25 +80,16 @@ const App = () => {
 
   const restoreOriginalUri = async (
     _oktaAuth: OktaAuth,
-    originalUri: string,
+    _originalUri: string,
   ) => {
-    console.log("Restoring original URI:", originalUri);
-    navigate(originalUri || "/", { replace: true });
+    console.log("Restoring to /secrets after login");
+    navigate("/secrets", { replace: true });
   };
 
   return (
     <Security oktaAuth={oktaAuth} restoreOriginalUri={restoreOriginalUri}>
       <Routes>
-        <Route
-          path="/"
-          element={
-            <div>
-              <h2>Home</h2>
-              <a href="/login">Login</a>
-            </div>
-          }
-        />
-        <Route path="/login" element={<Login />} />
+        <Route path="/" element={<Home />} />
         <Route path="/login/callback" element={<CustomLoginCallback />} />
         <Route
           path="/secrets"
