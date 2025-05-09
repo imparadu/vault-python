@@ -1,8 +1,9 @@
 import { OktaAuth } from "@okta/okta-auth-js";
 import { Security, useOktaAuth } from "@okta/okta-react";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
-import { ReactElement, useEffect } from "react";
+import { ReactElement, useEffect, useState } from "react";
 import CustomLoginCallback from "./CustomLoginCallback";
+import axios from "axios";
 
 const oktaAuth = new OktaAuth({
   issuer: process.env.REACT_APP_OKTA_ISSUER || "http://default-issuer-url",
@@ -57,7 +58,7 @@ const Home = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!authState) return; // Wait for authState to load
+    if (!authState) return;
     if (!authState.isAuthenticated) {
       console.log("User is not authenticated, redirecting to Okta");
       oktaAuth.signInWithRedirect();
@@ -71,6 +72,47 @@ const Home = () => {
   return (
     <div>
       <h2>Home</h2>
+    </div>
+  );
+};
+
+const SecretsPage = () => {
+  const { authState } = useOktaAuth();
+  const [secret, setSecret] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!authState?.accessToken?.accessToken) {
+      console.log("No access token, skipping fetch");
+      return;
+    }
+
+    const fetchSecret = async () => {
+      try {
+        console.log("Fetching secret from http://localhost:3001/secrets");
+        const response = await axios.get("http://localhost:3001/secrets", {
+          headers: {
+            Authorization: `Bearer ${authState?.accessToken?.accessToken || ""}`,
+          },
+        });
+        console.log("Secret response:", JSON.stringify(response.data, null, 2));
+        setSecret(response.data.message || "No secret found");
+      } catch (err) {
+        console.error("Error fetching secret:", err);
+        setError("Failed to fetch secret");
+      }
+    };
+
+    fetchSecret();
+  }, [authState]);
+
+  if (error) return <div>Error: {error}</div>;
+  if (secret === null) return <div>Loading secret...</div>;
+
+  return (
+    <div>
+      <h2>Secrets Page</h2>
+      <p>Secret: {secret}</p>
     </div>
   );
 };
@@ -95,7 +137,7 @@ const App = () => {
           path="/secrets"
           element={
             <ProtectedRoute>
-              <div>Secrets Page</div>
+              <SecretsPage />
             </ProtectedRoute>
           }
         />
