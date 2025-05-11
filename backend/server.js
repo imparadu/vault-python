@@ -4,7 +4,7 @@ const cors = require("cors");
 const OktaJwtVerifier = require("@okta/jwt-verifier");
 const vault = require("node-vault")({
   endpoint: "http://vault:8200",
-  token: "root",
+  token: process.env.VAULT_TOKEN
 });
 
 const app = express();
