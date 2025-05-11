@@ -1,27 +1,20 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { LoginCallback } from "@okta/okta-react";
-import { useNavigate } from "react-router-dom";
 
-const CustomLoginCallback = () => {
-  const navigate = useNavigate();
+const CustomLoginCallback: React.FC = () => {
+  useEffect(() => {
+    console.log("Okta callback processed", {
+      url: window.location.href,
+      search: window.location.search,
+    });
+  }, []);
 
-  const handleError = (error: Error) => {
-    console.error("Token exchange error:", error);
-    return (
-      <div>
-        <h2>Authentication Error</h2>
-        <p>{error.message}</p>
-        <button onClick={() => navigate("/login")}>Try Again</button>
-      </div>
-    );
+  const errorComponent = ({ error }: { error?: Error }) => {
+    console.error("Okta authentication error:", error?.message, error);
+    return <div>Authentication error: {error?.message || "Unknown error"}</div>;
   };
 
-  return (
-    <LoginCallback
-      errorComponent={({ error }) => handleError(error)}
-      onAuthResume={() => navigate("/login")}
-    />
-  );
+  return <LoginCallback errorComponent={errorComponent} />;
 };
 
 export default CustomLoginCallback;

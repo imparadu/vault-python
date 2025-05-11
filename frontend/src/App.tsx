@@ -1,147 +1,98 @@
-import { OktaAuth } from "@okta/okta-auth-js";
-import { Security, useOktaAuth } from "@okta/okta-react";
-import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
-import { ReactElement, useEffect, useState } from "react";
-import CustomLoginCallback from "./CustomLoginCallback";
-import axios from "axios";
+import React, { useEffect, useState } from 'react';
+import { Switch, Route, useHistory } from 'react-router-dom';
+import { OktaAuth, toRelativeUrl } from '@okta/okta-auth-js';
+import { Security, SecureRoute } from '@okta/okta-react';
+import CustomLoginCallback from './CustomLoginCallback';
+import axios from 'axios';
 
 const oktaAuth = new OktaAuth({
-  issuer: process.env.REACT_APP_OKTA_ISSUER || "http://default-issuer-url",
+  issuer: process.env.REACT_APP_OKTA_ISSUER ?? 'https://dev-61996693.okta.com/oauth2/default',
+  clientId: process.env.REACT_APP_OKTA_CLIENT_ID ?? '0oaolzq3t8tsEPurx5d7',
+  redirectUri: process.env.REACT_APP_OKTA_REDIRECT_URI ?? 'https://localhost:3000/login/callback',
+  pkce: true,
+  scopes: ['openid', 'email', 'profile'],
+  responseType: ['code'],
+  restoreOriginalUri: undefined // Explicitly disable default callback
+});
+
+console.log('Raw Environment Variables:', {
+  REACT_APP_OKTA_ISSUER: process.env.REACT_APP_OKTA_ISSUER,
+  REACT_APP_OKTA_CLIENT_ID: process.env.REACT_APP_OKTA_CLIENT_ID,
+  REACT_APP_OKTA_REDIRECT_URI: process.env.REACT_APP_OKTA_REDIRECT_URI
+});
+
+console.log('Okta Config:', {
+  issuer: process.env.REACT_APP_OKTA_ISSUER,
   clientId: process.env.REACT_APP_OKTA_CLIENT_ID,
   redirectUri: process.env.REACT_APP_OKTA_REDIRECT_URI,
   pkce: true,
-  scopes: ["openid", "email", "profile"],
-  responseType: ["code"],
+  scopes: ['openid', 'email', 'profile'],
+  responseType: ['code']
 });
 
-console.log(
-  "Raw Environment Variables:",
-  JSON.stringify(
-    {
-      REACT_APP_OKTA_ISSUER: process.env.REACT_APP_OKTA_ISSUER,
-      REACT_APP_OKTA_CLIENT_ID: process.env.REACT_APP_OKTA_CLIENT_ID,
-      REACT_APP_OKTA_REDIRECT_URI: process.env.REACT_APP_OKTA_REDIRECT_URI,
-    },
-    null,
-    2,
-  ),
-);
-console.log(
-  "Okta Config:",
-  JSON.stringify(
-    {
-      issuer: oktaAuth.options.issuer,
-      clientId: oktaAuth.options.clientId,
-      redirectUri: oktaAuth.options.redirectUri,
-      pkce: oktaAuth.options.pkce,
-      scopes: oktaAuth.options.scopes,
-      responseType: oktaAuth.options.responseType,
-    },
-    null,
-    2,
-  ),
-);
+const Home: React.FC = () => <h1>Home Page</h1>;
 
-interface ProtectedRouteProps {
-  children: ReactElement;
-}
-
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const { authState } = useOktaAuth();
-  console.log("ProtectedRoute authState:", JSON.stringify(authState, null, 2));
-  if (!authState) return <div>Loading...</div>;
-  return authState.isAuthenticated ? children : <Navigate to="/" replace />;
-};
-
-const Home = () => {
-  const { oktaAuth, authState } = useOktaAuth();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!authState) return;
-    if (!authState.isAuthenticated) {
-      console.log("User is not authenticated, redirecting to Okta");
-      oktaAuth.signInWithRedirect();
-    } else {
-      console.log("User is authenticated, redirecting to /secrets");
-      navigate("/secrets", { replace: true });
-    }
-  }, [authState, oktaAuth, navigate]);
-
-  if (!authState || !authState.isAuthenticated) return <div>Loading...</div>;
-  return (
-    <div>
-      <h2>Home</h2>
-    </div>
-  );
-};
-
-const SecretsPage = () => {
-  const { authState } = useOktaAuth();
-  const [secret, setSecret] = useState<string | null>(null);
+const Secrets: React.FC = () => {
+  const [secret, setSecret] = useState<{ message: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!authState?.accessToken?.accessToken) {
-      console.log("No access token, skipping fetch");
-      return;
-    }
-
     const fetchSecret = async () => {
       try {
-        console.log("Fetching secret from http://localhost:3001/secrets");
-        const response = await axios.get("http://localhost:3001/secrets", {
+        const accessToken = oktaAuth.getAccessToken();
+        if (!accessToken) {
+          console.error('No access token available');
+          setError('No access token available');
+          return;
+        }
+        console.log('Sending Authorization header:', `Bearer ${accessToken}`);
+        console.log('Fetching secret from http://localhost:3001/secrets');
+        const response = await axios.get('http://localhost:3001/secrets', {
           headers: {
-            Authorization: `Bearer ${authState?.accessToken?.accessToken || ""}`,
-          },
+            Authorization: `Bearer ${accessToken}`
+          }
         });
-        console.log("Secret response:", JSON.stringify(response.data, null, 2));
-        setSecret(response.data.message || "No secret found");
-      } catch (err) {
-        console.error("Error fetching secret:", err);
-        setError("Failed to fetch secret");
+        console.log('Secret response:', response.data);
+        setSecret(response.data);
+        setError(null);
+      } catch (error: any) {
+        console.error('Error fetching secret:', error);
+        setError(error.response?.data?.error || 'Failed to fetch secret');
       }
     };
 
     fetchSecret();
-  }, [authState]);
-
-  if (error) return <div>Error: {error}</div>;
-  if (secret === null) return <div>Loading secret...</div>;
+  }, []);
 
   return (
     <div>
-      <h2>Secrets Page</h2>
-      <p>Secret: {secret}</p>
+      <h1>Secrets Page</h1>
+      {error ? (
+        <p>Error: {error}</p>
+      ) : (
+        <p>Secret: {secret ? secret.message : 'No secret found'}</p>
+      )}
     </div>
   );
 };
 
-const App = () => {
-  const navigate = useNavigate();
+const App: React.FC = () => {
+  const history = useHistory();
 
-  const restoreOriginalUri = async (
-    _oktaAuth: OktaAuth,
-    _originalUri: string,
-  ) => {
-    console.log("Restoring to /secrets after login");
-    navigate("/secrets", { replace: true });
+  const restoreOriginalUri = async (_oktaAuth: OktaAuth, originalUri: string) => {
+    console.log('Original URI received:', originalUri);
+    const targetUri = '/secrets'; // Force redirect to /secrets
+    console.log('Restoring to', targetUri, 'after login');
+    history.replace(toRelativeUrl(targetUri, window.location.origin));
   };
 
   return (
     <Security oktaAuth={oktaAuth} restoreOriginalUri={restoreOriginalUri}>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login/callback" element={<CustomLoginCallback />} />
-        <Route
-          path="/secrets"
-          element={
-            <ProtectedRoute>
-              <SecretsPage />
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
+      <Switch>
+        <SecureRoute path="/" exact component={Home} />
+        <Route path="/login/callback" component={CustomLoginCallback} />
+        <SecureRoute path="/secrets" component={Secrets} />
+      </Switch>
     </Security>
   );
 };
