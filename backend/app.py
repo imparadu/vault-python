@@ -12,7 +12,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.backends import default_backend
 
 app = Flask(__name__)
-CORS(app, resources={r"/secrets": {"origins": "https://localhost:3000"}})
+CORS(app, resources={r"/secrets": {"origins": "http://localhost:3000"}})
 logging.basicConfig(level=logging.INFO)
 
 # Vault configuration

@@ -42,12 +42,7 @@ services:
     environment:
       - REACT_APP_OKTA_ISSUER=https://dev-61996693.okta.com/oauth2/default
       - REACT_APP_OKTA_CLIENT_ID=0oaolzq3t8tsEPurx5d7
-      - REACT_APP_OKTA_REDIRECT_URI=https://localhost:3000/login/callback
-      - HTTPS=true
-      - SSL_CRT_FILE=/app/ssl/cert.pem
-      - SSL_KEY_FILE=/app/ssl/key.pem
-    volumes:
-      - ./frontend/ssl:/app/ssl
+      - REACT_APP_OKTA_REDIRECT_URI=http://localhost:3000/login/callback
     networks:
       - vault-python-network
 
