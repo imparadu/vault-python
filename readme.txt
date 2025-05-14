@@ -1,5 +1,5 @@
 vault-1     | Starting Vault server...
-vault-1     | Vault PID: 22
+vault-1     | Vault PID: 18
 vault-1     | Waiting for Vault to be ready (attempt 1/30)...
 vault-1     | curl health check failed: 7
 frontend-1  |
@@ -22,10 +22,7 @@ frontend-1  | (Use `node --trace-deprecation ...` to show where the warning was 
 frontend-1  | (node:25) [DEP_WEBPACK_DEV_SERVER_ON_BEFORE_SETUP_MIDDLEWARE] DeprecationWarning: 'onBeforeSetupMiddleware' option is deprecated. Please use the 'setupMiddlewares' option.
 frontend-1  | Starting the development server...
 frontend-1  |
-100   462    0   462    0     0    321      0 --:--:--  0:00:01 --:--:--   321
-vault-1     | base64: truncated input
-vault-1     | base64: truncated input
-vault-1     | base64: truncated input
+100   462    0   462    0     0    357      0 --:--:--  0:00:01 --:--:--   358
 vault-1     | Error: Failed to convert DER to PEM format
 vault-1     | ==> Vault server configuration:
 vault-1     |
@@ -45,54 +42,54 @@ vault-1     |              Version Sha: b4d07277a6c5318bb50d3b94bbd6135dccb4c601
 vault-1     |
 vault-1     | ==> Vault server started! Log data will stream in below:
 vault-1     |
-vault-1     | 2025-05-14T16:34:57.917Z [INFO]  proxy environment: http_proxy="" https_proxy="" no_proxy=""
-vault-1     | 2025-05-14T16:34:57.918Z [INFO]  incrementing seal generation: generation=1
-vault-1     | 2025-05-14T16:34:57.918Z [WARN]  no `api_addr` value specified in config or in VAULT_API_ADDR; falling back to detection if possible, but this value should be manually set
-vault-1     | 2025-05-14T16:34:57.918Z [INFO]  core: Initializing version history cache for core
-vault-1     | 2025-05-14T16:34:57.918Z [INFO]  events: Starting event system
-vault-1     | 2025-05-14T16:34:57.921Z [INFO]  core: security barrier not initialized
-vault-1     | 2025-05-14T16:34:57.921Z [INFO]  core: security barrier initialized: stored=1 shares=1 threshold=1
-vault-1     | 2025-05-14T16:34:57.922Z [INFO]  core: post-unseal setup starting
-vault-1     | 2025-05-14T16:34:57.930Z [INFO]  core: loaded wrapping token key
-vault-1     | 2025-05-14T16:34:57.930Z [INFO]  core: successfully setup plugin runtime catalog
-vault-1     | 2025-05-14T16:34:57.930Z [INFO]  core: successfully setup plugin catalog: plugin-directory=""
-vault-1     | 2025-05-14T16:34:57.931Z [INFO]  core: no mounts; adding default mount table
-vault-1     | 2025-05-14T16:34:57.932Z [INFO]  core: successfully mounted: type=cubbyhole version="v1.15.0+builtin.vault" path=cubbyhole/ namespace="ID: root. Path: "
-vault-1     | 2025-05-14T16:34:57.933Z [INFO]  core: successfully mounted: type=system version="v1.15.0+builtin.vault" path=sys/ namespace="ID: root. Path: "
-vault-1     | 2025-05-14T16:34:57.933Z [INFO]  core: successfully mounted: type=identity version="v1.15.0+builtin.vault" path=identity/ namespace="ID: root. Path: "
-vault-1     | 2025-05-14T16:34:57.937Z [INFO]  core: successfully mounted: type=token version="v1.15.0+builtin.vault" path=token/ namespace="ID: root. Path: "
-vault-1     | 2025-05-14T16:34:57.938Z [INFO]  rollback: Starting the rollback manager with 256 workers
-vault-1     | 2025-05-14T16:34:57.938Z [INFO]  rollback: starting rollback manager
-vault-1     | 2025-05-14T16:34:57.938Z [INFO]  core: restoring leases
-vault-1     | 2025-05-14T16:34:57.939Z [INFO]  expiration: lease restore complete
-vault-1     | 2025-05-14T16:34:57.939Z [INFO]  identity: entities restored
-vault-1     | 2025-05-14T16:34:57.939Z [INFO]  identity: groups restored
-vault-1     | 2025-05-14T16:34:57.939Z [INFO]  core: Recorded vault version: vault version=1.15.0 upgrade time="2025-05-14 16:34:57.939720456 +0000 UTC" build date=2023-09-22T16:53:10Z
-vault-1     | 2025-05-14T16:34:58.182Z [INFO]  core: post-unseal setup complete
-vault-1     | 2025-05-14T16:34:58.182Z [INFO]  core: root token generated
-vault-1     | 2025-05-14T16:34:58.182Z [INFO]  core: pre-seal teardown starting
-vault-1     | 2025-05-14T16:34:58.182Z [INFO]  rollback: stopping rollback manager
-vault-1     | 2025-05-14T16:34:58.185Z [INFO]  core: pre-seal teardown complete
-vault-1     | 2025-05-14T16:34:58.185Z [INFO]  core.cluster-listener.tcp: starting listener: listener_address=0.0.0.0:8201
-vault-1     | 2025-05-14T16:34:58.186Z [INFO]  core.cluster-listener: serving cluster requests: cluster_listen_address=[::]:8201
-vault-1     | 2025-05-14T16:34:58.186Z [INFO]  core: post-unseal setup starting
-vault-1     | 2025-05-14T16:34:58.186Z [INFO]  core: loaded wrapping token key
-vault-1     | 2025-05-14T16:34:58.186Z [INFO]  core: successfully setup plugin runtime catalog
-vault-1     | 2025-05-14T16:34:58.186Z [INFO]  core: successfully setup plugin catalog: plugin-directory=""
-vault-1     | 2025-05-14T16:34:58.187Z [INFO]  core: successfully mounted: type=system version="v1.15.0+builtin.vault" path=sys/ namespace="ID: root. Path: "
-vault-1     | 2025-05-14T16:34:58.187Z [INFO]  core: successfully mounted: type=identity version="v1.15.0+builtin.vault" path=identity/ namespace="ID: root. Path: "
-vault-1     | 2025-05-14T16:34:58.187Z [INFO]  core: successfully mounted: type=cubbyhole version="v1.15.0+builtin.vault" path=cubbyhole/ namespace="ID: root. Path: "
-vault-1     | 2025-05-14T16:34:58.189Z [INFO]  core: successfully mounted: type=token version="v1.15.0+builtin.vault" path=token/ namespace="ID: root. Path: "
-vault-1     | 2025-05-14T16:34:58.189Z [INFO]  rollback: Starting the rollback manager with 256 workers
-vault-1     | 2025-05-14T16:34:58.189Z [INFO]  core: restoring leases
-vault-1     | 2025-05-14T16:34:58.190Z [INFO]  rollback: starting rollback manager
-vault-1     | 2025-05-14T16:34:58.190Z [INFO]  identity: entities restored
-vault-1     | 2025-05-14T16:34:58.190Z [INFO]  identity: groups restored
-vault-1     | 2025-05-14T16:34:58.191Z [INFO]  core: post-unseal setup complete
-vault-1     | 2025-05-14T16:34:58.191Z [INFO]  core: vault is unsealed
-vault-1     | 2025-05-14T16:34:58.196Z [INFO]  expiration: lease restore complete
-vault-1     | 2025-05-14T16:34:58.197Z [INFO]  expiration: revoked lease: lease_id=auth/token/root/h23116a225eb8a5354533471757b853508f81422233b368eca94c06ccfb3cf1e0
-vault-1     | 2025-05-14T16:34:58.207Z [INFO]  core: successful mount: namespace="" path=secret/ type=kv version=""
+vault-1     | 2025-05-14T16:50:23.762Z [INFO]  proxy environment: http_proxy="" https_proxy="" no_proxy=""
+vault-1     | 2025-05-14T16:50:23.763Z [INFO]  incrementing seal generation: generation=1
+vault-1     | 2025-05-14T16:50:23.763Z [WARN]  no `api_addr` value specified in config or in VAULT_API_ADDR; falling back to detection if possible, but this value should be manually set
+vault-1     | 2025-05-14T16:50:23.764Z [INFO]  core: Initializing version history cache for core
+vault-1     | 2025-05-14T16:50:23.764Z [INFO]  events: Starting event system
+vault-1     | 2025-05-14T16:50:23.765Z [INFO]  core: security barrier not initialized
+vault-1     | 2025-05-14T16:50:23.765Z [INFO]  core: security barrier initialized: stored=1 shares=1 threshold=1
+vault-1     | 2025-05-14T16:50:23.766Z [INFO]  core: post-unseal setup starting
+vault-1     | 2025-05-14T16:50:23.774Z [INFO]  core: loaded wrapping token key
+vault-1     | 2025-05-14T16:50:23.774Z [INFO]  core: successfully setup plugin runtime catalog
+vault-1     | 2025-05-14T16:50:23.774Z [INFO]  core: successfully setup plugin catalog: plugin-directory=""
+vault-1     | 2025-05-14T16:50:23.774Z [INFO]  core: no mounts; adding default mount table
+vault-1     | 2025-05-14T16:50:23.776Z [INFO]  core: successfully mounted: type=cubbyhole version="v1.15.0+builtin.vault" path=cubbyhole/ namespace="ID: root. Path: "
+vault-1     | 2025-05-14T16:50:23.777Z [INFO]  core: successfully mounted: type=system version="v1.15.0+builtin.vault" path=sys/ namespace="ID: root. Path: "
+vault-1     | 2025-05-14T16:50:23.777Z [INFO]  core: successfully mounted: type=identity version="v1.15.0+builtin.vault" path=identity/ namespace="ID: root. Path: "
+vault-1     | 2025-05-14T16:50:23.784Z [INFO]  core: successfully mounted: type=token version="v1.15.0+builtin.vault" path=token/ namespace="ID: root. Path: "
+vault-1     | 2025-05-14T16:50:23.784Z [INFO]  rollback: Starting the rollback manager with 256 workers
+vault-1     | 2025-05-14T16:50:23.784Z [INFO]  rollback: starting rollback manager
+vault-1     | 2025-05-14T16:50:23.784Z [INFO]  core: restoring leases
+vault-1     | 2025-05-14T16:50:23.786Z [INFO]  expiration: lease restore complete
+vault-1     | 2025-05-14T16:50:23.789Z [INFO]  identity: entities restored
+vault-1     | 2025-05-14T16:50:23.789Z [INFO]  identity: groups restored
+vault-1     | 2025-05-14T16:50:23.789Z [INFO]  core: Recorded vault version: vault version=1.15.0 upgrade time="2025-05-14 16:50:23.78923341 +0000 UTC" build date=2023-09-22T16:53:10Z
+vault-1     | 2025-05-14T16:50:24.096Z [INFO]  core: post-unseal setup complete
+vault-1     | 2025-05-14T16:50:24.096Z [INFO]  core: root token generated
+vault-1     | 2025-05-14T16:50:24.096Z [INFO]  core: pre-seal teardown starting
+vault-1     | 2025-05-14T16:50:24.096Z [INFO]  rollback: stopping rollback manager
+vault-1     | 2025-05-14T16:50:24.096Z [INFO]  core: pre-seal teardown complete
+vault-1     | 2025-05-14T16:50:24.096Z [INFO]  core.cluster-listener.tcp: starting listener: listener_address=0.0.0.0:8201
+vault-1     | 2025-05-14T16:50:24.096Z [INFO]  core.cluster-listener: serving cluster requests: cluster_listen_address=[::]:8201
+vault-1     | 2025-05-14T16:50:24.097Z [INFO]  core: post-unseal setup starting
+vault-1     | 2025-05-14T16:50:24.097Z [INFO]  core: loaded wrapping token key
+vault-1     | 2025-05-14T16:50:24.097Z [INFO]  core: successfully setup plugin runtime catalog
+vault-1     | 2025-05-14T16:50:24.097Z [INFO]  core: successfully setup plugin catalog: plugin-directory=""
+vault-1     | 2025-05-14T16:50:24.100Z [INFO]  core: successfully mounted: type=system version="v1.15.0+builtin.vault" path=sys/ namespace="ID: root. Path: "
+vault-1     | 2025-05-14T16:50:24.101Z [INFO]  core: successfully mounted: type=identity version="v1.15.0+builtin.vault" path=identity/ namespace="ID: root. Path: "
+vault-1     | 2025-05-14T16:50:24.101Z [INFO]  core: successfully mounted: type=cubbyhole version="v1.15.0+builtin.vault" path=cubbyhole/ namespace="ID: root. Path: "
+vault-1     | 2025-05-14T16:50:24.102Z [INFO]  core: successfully mounted: type=token version="v1.15.0+builtin.vault" path=token/ namespace="ID: root. Path: "
+vault-1     | 2025-05-14T16:50:24.102Z [INFO]  rollback: Starting the rollback manager with 256 workers
+vault-1     | 2025-05-14T16:50:24.102Z [INFO]  rollback: starting rollback manager
+vault-1     | 2025-05-14T16:50:24.103Z [INFO]  core: restoring leases
+vault-1     | 2025-05-14T16:50:24.103Z [INFO]  identity: entities restored
+vault-1     | 2025-05-14T16:50:24.103Z [INFO]  identity: groups restored
+vault-1     | 2025-05-14T16:50:24.104Z [INFO]  expiration: lease restore complete
+vault-1     | 2025-05-14T16:50:24.104Z [INFO]  core: post-unseal setup complete
+vault-1     | 2025-05-14T16:50:24.104Z [INFO]  core: vault is unsealed
+vault-1     | 2025-05-14T16:50:24.109Z [INFO]  expiration: revoked lease: lease_id=auth/token/root/h22f8136a9ce5e07677339ec961683091e96fc57186f2661fe1b9b04c063eb905
+vault-1     | 2025-05-14T16:50:24.116Z [INFO]  core: successful mount: namespace="" path=secret/ type=kv version=""
 vault-1     | WARNING! dev mode is enabled! In this mode, Vault runs entirely in-memory
 vault-1     | and starts unsealed with a single unseal key. The root token is already
 vault-1     | authenticated to the CLI, so you can immediately begin using Vault.
@@ -104,11 +101,11 @@ vault-1     |
 vault-1     | The unseal key and root token are displayed below in case you want to
 vault-1     | seal/unseal the Vault or re-authenticate.
 vault-1     |
-vault-1     | Unseal Key: IPTTKqIyhHseGeogNdmWuOROEBn08X8RroTP3ywaZKU=
+vault-1     | Unseal Key: PDywCgjLKYCPxjUeNQLoKYwsA5uhTCxm/fpNf3YjrZM=
 vault-1     | Root Token: root
 vault-1     |
 vault-1     | Development mode should NOT be used in production installations!
 vault-1     |
-vault-1 exited with code 1
 Gracefully stopping... (press Ctrl+C again to force)
 dependency failed to start: container vault-python-vault-1 exited (1)
+~/temp-clone/vault-python master ❯                                                                                        1m 2s
