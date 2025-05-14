@@ -1,7 +1,8 @@
 FROM node:23-alpine
 WORKDIR /app
 COPY package*.json ./
-RUN npm install
+RUN npm config set strict-ssl false && \
+    npm cache clean --force && \
+    npm install
 COPY . .
-EXPOSE 3000
 CMD ["npm", "start"]
