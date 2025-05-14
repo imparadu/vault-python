@@ -26,13 +26,28 @@ until curl -fs http://127.0.0.1:8200/v1/sys/health > /dev/null 2>&1; do
   fi
 done
 echo "Vault is ready, configuring JWT auth and secrets..."
+# Fetch JWKS manually
+JWKS=$(curl -k https://dev-93127078.okta.com/oauth2/default/v1/keys)
+if [ $? -ne 0 ]; then
+  echo "Error: Failed to fetch JWKS"
+  cat /tmp/vault.log
+  kill $VAULT_PID
+  exit 1
+fi
+# Extract the first public key (PEM format)
+PUBKEY=$(echo "$JWKS" | jq -r '.keys[0] | "-----BEGIN PUBLIC KEY-----\n" + .x5c[0] + "\n-----END PUBLIC KEY-----"')
+if [ -z "$PUBKEY" ]; then
+  echo "Error: Failed to extract public key from JWKS"
+  cat /tmp/vault.log
+  kill $VAULT_PID
+  exit 1
+fi
 # Enable JWT auth method
 /bin/vault auth enable jwt
-# Configure JWT auth with JWKS
+# Configure JWT auth with static public key
 /bin/vault write auth/jwt/config \
-    jwks_url="https://dev-93127078.okta.com/oauth2/default/v1/keys" \
-    default_role="okta-user" \
-    jwks_ca_pem=""
+    jwt_validation_pubkeys="$PUBKEY" \
+    default_role="okta-user"
 # Create JWT role
 /bin/vault write auth/jwt/role/okta-user \
     role_type="jwt" \
