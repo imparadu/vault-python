@@ -4,8 +4,6 @@ from functools import wraps
 import hvac
 import jwt
 import requests
-from urllib.parse import quote
-import time
 import logging
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
@@ -17,42 +15,31 @@ logging.basicConfig(level=logging.INFO)
 
 # Vault configuration
 VAULT_URL = 'http://vault:8200'
-VAULT_TOKEN = 'root'
 
-def init_vault_client(max_retries=5, retry_delay=5):
-    for attempt in range(max_retries):
-        try:
-            client = hvac.Client(url=VAULT_URL, token=VAULT_TOKEN)
-            client.is_authenticated()
-            logging.info("Vault client authenticated successfully")
-            return client
-        except Exception as e:
-            logging.error(f"Vault connection attempt {attempt + 1}/{max_retries} failed: {str(e)}")
-            if attempt < max_retries - 1:
-                time.sleep(retry_delay)
-            else:
-                raise Exception(f"Failed to connect to Vault after {max_retries} attempts: {str(e)}")
+def init_vault_client():
+    try:
+        client = hvac.Client(url=VAULT_URL)
+        return client
+    except Exception as e:
+        logging.error(f"Failed to initialize Vault client: {str(e)}")
+        raise
 
 vault_client = init_vault_client()
 
 # Okta configuration
-OKTA_ISSUER = 'https://dev-61996693.okta.com/oauth2/default'
+OKTA_ISSUER = 'https://dev-93127078.okta.com/oauth2/default'
 OKTA_AUDIENCE = 'api://default'
 OKTA_JWKS_URL = f'{OKTA_ISSUER}/v1/keys'
 
-# Cache JWKS
-jwks = None
-
 def verify_jwt(token):
-    global jwks
     try:
-        if jwks is None:
-            response = requests.get(OKTA_JWKS_URL)
-            if response.status_code != 200:
-                logging.error(f'Failed to fetch JWKS: {response.status_code} {response.reason} for url: {OKTA_JWKS_URL}')
-                return None
-            response.raise_for_status()
-            jwks = response.json()
+        response = requests.get(OKTA_JWKS_URL)
+        if response.status_code != 200:
+            logging.error(f'Failed to fetch JWKS: {response.status_code} {response.reason} for url: {OKTA_JWKS_URL}')
+            return None
+        response.raise_for_status()
+        jwks = response.json()
+        logging.info(f'Fetched JWKS: {jwks}')
 
         headers = jwt.get_unverified_header(token)
         kid = headers.get('kid')
@@ -65,7 +52,6 @@ def verify_jwt(token):
             logging.error(f'JWT verification failed: No matching key for kid {kid}')
             return None
 
-        # Convert JWK to PEM-formatted public key
         n = int.from_bytes(jwt.utils.base64url_decode(key['n']), 'big')
         e = int.from_bytes(jwt.utils.base64url_decode(key['e']), 'big')
         public_key = rsa.RSAPublicNumbers(e, n).public_key(default_backend())
@@ -74,7 +60,6 @@ def verify_jwt(token):
             format=serialization.PublicFormat.SubjectPublicKeyInfo
         )
 
-        # Decode JWT with PEM-formatted key
         decoded = jwt.decode(
             token,
             pem_key,
@@ -103,25 +88,56 @@ def authenticate(f):
             logging.error('Token verification failed')
             return jsonify({'error': 'Invalid token'}), 401
 
-        return f(decoded, *args, **kwargs)
+        return f(decoded, token, *args, **kwargs)
     return decorated
 
 @app.route('/secrets', methods=['GET'])
 @authenticate
-def get_secret(decoded):
+def get_secrets(decoded, token):
     try:
         user_email = decoded.get('sub')
         if not user_email:
             logging.error('No sub claim in JWT')
             return jsonify({'error': 'Invalid token payload'}), 401
 
-        secret_path = f'secret/data/users/{user_email}'
-        logging.info(f'Attempting to read Vault secret at: {secret_path}')
-        secret = vault_client.secrets.kv.v2.read_secret_version(path=f'users/{user_email}', mount_point='secret')
-        logging.info(f'Vault read result: {secret}')
-        return jsonify(secret['data']['data'])
+        # Authenticate with Vault using JWT auth method
+        logging.info(f'Attempting Vault JWT auth for {user_email}')
+        response = vault_client.auth.jwt.jwt_login(
+            role="okta-user",
+            jwt=token
+        )
+        vault_token = response['auth']['client_token']
+        vault_client.token = vault_token
+        logging.info(f'Vault JWT auth successful for {user_email}')
+
+        # List accessible secrets under restricted folder
+        secrets_list = []
+        subfolders = ['api-keys', 'db-creds', 'config']
+        for subfolder in subfolders:
+            try:
+                list_response = vault_client.secrets.kv.v2.list_secrets(
+                    path=f'restricted/{subfolder}',
+                    mount_point='secret'
+                )
+                keys = list_response['data']['keys']
+                for key in keys:
+                    try:
+                        secret = vault_client.secrets.kv.v2.read_secret_version(
+                            path=f'restricted/{subfolder}/{key}',
+                            mount_point='secret'
+                        )
+                        secrets_list.append({
+                            'path': f'restricted/{subfolder}/{key}',
+                            'data': secret['data']['data']
+                        })
+                    except Exception as e:
+                        logging.info(f'No access to secret restricted/{subfolder}/{key}: {str(e)}')
+            except Exception as e:
+                logging.info(f'No access to subfolder restricted/{subfolder}: {str(e)}')
+
+        return jsonify({'secrets': secrets_list})
     except Exception as e:
-        logging.error(f'Error reading secret: {str(e)}')
+        logging.error(f'Error fetching secrets: {str(e)}')
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':

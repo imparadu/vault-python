@@ -8,13 +8,13 @@ import axios from "axios";
 const oktaAuth = new OktaAuth({
   issuer:
     process.env.REACT_APP_OKTA_ISSUER ??
-    "https://dev-61996693.okta.com/oauth2/default",
-  clientId: process.env.REACT_APP_OKTA_CLIENT_ID ?? "0oaolzq3t8tsEPurx5d7",
+    "https://dev-93127078.okta.com/oauth2/default",
+  clientId: process.env.REACT_APP_OKTA_CLIENT_ID ?? "0oaopl2m6ppzxkJX25d7",
   redirectUri:
     process.env.REACT_APP_OKTA_REDIRECT_URI ??
     "http://localhost:3000/login/callback",
   pkce: true,
-  scopes: ["openid", "email", "profile"],
+  scopes: ["openid", "email", "profile", "groups"],
   responseType: ["code"],
   restoreOriginalUri: undefined, // Explicitly disable default callback
 });
@@ -30,51 +30,69 @@ console.log("Okta Config:", {
   clientId: process.env.REACT_APP_OKTA_CLIENT_ID,
   redirectUri: process.env.REACT_APP_OKTA_REDIRECT_URI,
   pkce: true,
-  scopes: ["openid", "email", "profile"],
+  scopes: ["openid", "email", "profile", "groups"],
   responseType: ["code"],
 });
 
 const Home: React.FC = () => <h1>Home Page</h1>;
 
 const Secrets: React.FC = () => {
-  const [secret, setSecret] = useState<{ message: string } | null>(null);
+  const [secrets, setSecrets] = useState<Array<{ path: string; data: any }>>(
+    [],
+  );
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    const fetchSecret = async () => {
+    const fetchSecrets = async () => {
       try {
         const accessToken = oktaAuth.getAccessToken();
         if (!accessToken) {
           console.error("No access token available");
           setError("No access token available");
+          setLoading(false);
           return;
         }
         console.log("Sending Authorization header:", `Bearer ${accessToken}`);
-        console.log("Fetching secret from http://localhost:3001/secrets");
+        console.log("Fetching secrets from http://localhost:3001/secrets");
         const response = await axios.get("http://localhost:3001/secrets", {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
         });
-        console.log("Secret response:", response.data);
-        setSecret(response.data);
+        console.log("Secrets response:", response.data);
+        setSecrets(response.data.secrets);
         setError(null);
       } catch (error: any) {
-        console.error("Error fetching secret:", error);
-        setError(error.response?.data?.error || "Failed to fetch secret");
+        console.error("Error fetching secrets:", error);
+        setError(error.response?.data?.error || "Failed to fetch secrets");
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchSecret();
+    fetchSecrets();
   }, []);
 
   return (
     <div>
       <h1>Secrets Page</h1>
-      {error ? (
+      {loading ? (
+        <p>Loading...</p>
+      ) : error ? (
         <p>Error: {error}</p>
+      ) : secrets.length > 0 ? (
+        <ul>
+          {secrets.map((secret, index) => (
+            <li key={index}>
+              <strong>Path:</strong> {secret.path}
+              <br />
+              <strong>Data:</strong> {JSON.stringify(secret.data)}
+            </li>
+          ))}
+        </ul>
       ) : (
-        <p>Secret: {secret ? secret.message : "No secret found"}</p>
+        <p>No secrets accessible</p>
       )}
     </div>
   );
