@@ -1,18 +1,88 @@
+~/temp-clone/vault-python master ❯ docker logs vault-python-vault-1
+Starting Vault server...
+Vault PID: 20
+Waiting for Vault to be ready (attempt 1/30)...
+curl health check failed: 7
+Vault is ready, configuring JWT auth and secrets...
+Success! Enabled jwt auth method at: jwt/
+Error writing data to auth/jwt/config: Error making API request.
 
-backend-1   | INFO:root:Received Authorization header: Bearer eyJraWQiOiJVd0RzVElGNnZsQ2QyVU8xOVB2LVpEdEdFdk51anZMX3hxWUNrUUtTcUl3IiwiYWxnIjoiUlMyNTYifQ.eyJ2ZXIiOjEsImp0aSI6IkFULm45bkp1eW9MZ21vNHpQOUkzYTc4NWFxWTdiMHdXby1SWVotWnRQdU5IQkkiLCJpc3MiOiJodHRwczovL2Rldi05MzEyNzA3OC5va3RhLmNvbS9vYXV0aDIvZGVmYXVsdCIsImF1ZCI6ImFwaTovL2RlZmF1bHQiLCJpYXQiOjE3NDcyMzQ0ODcsImV4cCI6MTc0NzIzODA4NywiY2lkIjoiMG9hb3BsMm02cHB6eGtKWDI1ZDciLCJ1aWQiOiIwMHVvcGxjYm42eW5tcXR0WTVkNyIsInNjcCI6WyJlbWFpbCIsImdyb3VwcyIsIm9wZW5pZCIsInByb2ZpbGUiXSwiYXV0aF90aW1lIjoxNzQ3MjM0NDg2LCJzdWIiOiJwZWRyb0BleGFtcGxlLmNvbSIsImdyb3VwcyI6WyJFdmVyeW9uZSIsInRpZXIxIl19.R6vk3LeuBf3KCOBddIRyz9fd7CKRBs1cSSvhvSinLkzc3jYNK2Szt4iIIwMuyCawLY5xqcv9xnzKKNmRON_DOxTCeXAnAU-o5yMDe3TeNtKXfUKlD7mxDv-yTdh6jUa88lmQ2_RBhaYjsLI25rETYpixVT9u_95fNPGXK13lq-RtRtncTSgDdW8QOlPr23oqO9zUPkSuU4Qw3ExLJ7sGLiIm04IMsKhekiGdS6MBj3a9xQLQhNoG1TuBr3hJXdfVZOOKHhGFYpa2aKCj3AvZD0XFprh7lluehq3m2IKhiwULcZw-f5cxGjG583QcpJjtGhQHR98yvxn32O263txhTg
-backend-1   | INFO:root:Received Authorization header: Bearer eyJraWQiOiJVd0RzVElGNnZsQ2QyVU8xOVB2LVpEdEdFdk51anZMX3hxWUNrUUtTcUl3IiwiYWxnIjoiUlMyNTYifQ.eyJ2ZXIiOjEsImp0aSI6IkFULm45bkp1eW9MZ21vNHpQOUkzYTc4NWFxWTdiMHdXby1SWVotWnRQdU5IQkkiLCJpc3MiOiJodHRwczovL2Rldi05MzEyNzA3OC5va3RhLmNvbS9vYXV0aDIvZGVmYXVsdCIsImF1ZCI6ImFwaTovL2RlZmF1bHQiLCJpYXQiOjE3NDcyMzQ0ODcsImV4cCI6MTc0NzIzODA4NywiY2lkIjoiMG9hb3BsMm02cHB6eGtKWDI1ZDciLCJ1aWQiOiIwMHVvcGxjYm42eW5tcXR0WTVkNyIsInNjcCI6WyJlbWFpbCIsImdyb3VwcyIsIm9wZW5pZCIsInByb2ZpbGUiXSwiYXV0aF90aW1lIjoxNzQ3MjM0NDg2LCJzdWIiOiJwZWRyb0BleGFtcGxlLmNvbSIsImdyb3VwcyI6WyJFdmVyeW9uZSIsInRpZXIxIl19.R6vk3LeuBf3KCOBddIRyz9fd7CKRBs1cSSvhvSinLkzc3jYNK2Szt4iIIwMuyCawLY5xqcv9xnzKKNmRON_DOxTCeXAnAU-o5yMDe3TeNtKXfUKlD7mxDv-yTdh6jUa88lmQ2_RBhaYjsLI25rETYpixVT9u_95fNPGXK13lq-RtRtncTSgDdW8QOlPr23oqO9zUPkSuU4Qw3ExLJ7sGLiIm04IMsKhekiGdS6MBj3a9xQLQhNoG1TuBr3hJXdfVZOOKHhGFYpa2aKCj3AvZD0XFprh7lluehq3m2IKhiwULcZw-f5cxGjG583QcpJjtGhQHR98yvxn32O263txhTg
-backend-1   | /usr/local/lib/python3.11/site-packages/urllib3/connectionpool.py:1064: InsecureRequestWarning: Unverified HTTPS request is being made to host 'dev-93127078.okta.com'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/1.26.x/advanced-usage.html#ssl-warnings
-backend-1   |   warnings.warn(
-backend-1   | /usr/local/lib/python3.11/site-packages/urllib3/connectionpool.py:1064: InsecureRequestWarning: Unverified HTTPS request is being made to host 'dev-93127078.okta.com'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/1.26.x/advanced-usage.html#ssl-warnings
-backend-1   |   warnings.warn(
-backend-1   | INFO:root:Fetched JWKS: {'keys': [{'kty': 'RSA', 'alg': 'RS256', 'kid': 'UwDsTIF6vlCd2UO19Pv-ZDtGEvNujvL_xqYCkQKSqIw', 'use': 'sig', 'e': 'AQAB', 'n': '0LbtzG7TkhKROUniTLH_S9yBL3Tx1ugdkpS_hI5MmXWj5Cf7il4YkNCCXExZ1UqrXBNQNkCuHN1tsNADYyQvmovqLEdZ2-KPt346-sXkdXZoNsEXyWJsCOgv7z1Ym04sIJXohwN8KpdjhvpI9l7BU90qAeolrUYQGO5QgaKTcgmyOXQQ46yulc0OvwfUfeFXcFN306HBG_saLSzlOELKfYoFSimBo58WfP_RpdNfnN6zi9tIBn7V0x4Q1CSEZF-MSOg-mbE15KQzVnJbBkfrUk-mJZVHIXnQYUOJuSvPSLCjYx20-uU1w4QsgMS9PBUzJXUe8-krXpv1NvFNjqzbgw'}]}
-backend-1   | INFO:root:Fetched JWKS: {'keys': [{'kty': 'RSA', 'alg': 'RS256', 'kid': 'UwDsTIF6vlCd2UO19Pv-ZDtGEvNujvL_xqYCkQKSqIw', 'use': 'sig', 'e': 'AQAB', 'n': '0LbtzG7TkhKROUniTLH_S9yBL3Tx1ugdkpS_hI5MmXWj5Cf7il4YkNCCXExZ1UqrXBNQNkCuHN1tsNADYyQvmovqLEdZ2-KPt346-sXkdXZoNsEXyWJsCOgv7z1Ym04sIJXohwN8KpdjhvpI9l7BU90qAeolrUYQGO5QgaKTcgmyOXQQ46yulc0OvwfUfeFXcFN306HBG_saLSzlOELKfYoFSimBo58WfP_RpdNfnN6zi9tIBn7V0x4Q1CSEZF-MSOg-mbE15KQzVnJbBkfrUk-mJZVHIXnQYUOJuSvPSLCjYx20-uU1w4QsgMS9PBUzJXUe8-krXpv1NvFNjqzbgw'}]}
-backend-1   | INFO:root:JWT verified: {'ver': 1, 'jti': 'AT.n9nJuyoLgmo4zP9I3a785aqY7b0wWo-RYZ-ZtPuNHBI', 'iss': 'https://dev-93127078.okta.com/oauth2/default', 'aud': 'api://default', 'iat': 1747234487, 'exp': 1747238087, 'cid': '0oaopl2m6ppzxkJX25d7', 'uid': '00uoplcbn6ynmqttY5d7', 'scp': ['email', 'groups', 'openid', 'profile'], 'auth_time': 1747234486, 'sub': 'pedro@example.com', 'groups': ['Everyone', 'tier1']}
-backend-1   | INFO:root:JWT verified: {'ver': 1, 'jti': 'AT.n9nJuyoLgmo4zP9I3a785aqY7b0wWo-RYZ-ZtPuNHBI', 'iss': 'https://dev-93127078.okta.com/oauth2/default', 'aud': 'api://default', 'iat': 1747234487, 'exp': 1747238087, 'cid': '0oaopl2m6ppzxkJX25d7', 'uid': '00uoplcbn6ynmqttY5d7', 'scp': ['email', 'groups', 'openid', 'profile'], 'auth_time': 1747234486, 'sub': 'pedro@example.com', 'groups': ['Everyone', 'tier1']}
-backend-1   | INFO:root:Attempting Vault JWT auth for pedro@example.com
-backend-1   | INFO:root:Attempting Vault JWT auth for pedro@example.com
-backend-1   | ERROR:root:Error fetching secrets: could not load configuration, on post http://vault:8200/v1/auth/jwt/login
-backend-1   | INFO:werkzeug:192.168.65.1 - - [14/May/2025 14:54:49] "GET /secrets HTTP/1.1" 500 -
-backend-1   | ERROR:root:Error fetching secrets: could not load configuration, on post http://vault:8200/v1/auth/jwt/login
-backend-1   | INFO:werkzeug:192.168.65.1 - - [14/May/2025 14:54:49] "GET /secrets HTTP/1.1" 500 -
+URL: PUT http://127.0.0.1:8200/v1/auth/jwt/config
+Code: 400. Errors:
 
+* error checking oidc discovery URL
+Success! Data written to: auth/jwt/role/okta-user
+Success! Uploaded policy: tier1-policy
+Success! Uploaded policy: tier2-policy
+Key     Value
+---     -----
+id      ea99ff17-4d60-b987-f81b-3e533ae55dee
+name    tier1-group
+Key     Value
+---     -----
+id      cd7cd3b3-b439-ef55-a280-b044d745d204
+name    tier2-group
+Key             Value
+---             -----
+canonical_id    ea99ff17-4d60-b987-f81b-3e533ae55dee
+id              b5e0f350-b6df-4a80-930b-fa805b1be6ca
+Key             Value
+---             -----
+canonical_id    cd7cd3b3-b439-ef55-a280-b044d745d204
+id              c50a988f-9482-3008-e38a-8a6e5cfc509d
+============== Secret Path ==============
+secret/data/restricted/api-keys/api-key1
+
+======= Metadata =======
+Key                Value
+---                -----
+created_time       2025-05-14T14:54:17.993105483Z
+custom_metadata    <nil>
+deletion_time      n/a
+destroyed          false
+version            1
+============== Secret Path ==============
+secret/data/restricted/api-keys/api-key2
+
+======= Metadata =======
+Key                Value
+---                -----
+created_time       2025-05-14T14:54:18.136521617Z
+custom_metadata    <nil>
+deletion_time      n/a
+destroyed          false
+version            1
+============== Secret Path ==============
+secret/data/restricted/db-creds/db-user1
+
+======= Metadata =======
+Key                Value
+---                -----
+created_time       2025-05-14T14:54:18.238595602Z
+custom_metadata    <nil>
+deletion_time      n/a
+destroyed          false
+version            1
+============== Secret Path ==============
+secret/data/restricted/db-creds/db-user2
+
+======= Metadata =======
+Key                Value
+---                -----
+created_time       2025-05-14T14:54:18.357581714Z
+custom_metadata    <nil>
+deletion_time      n/a
+destroyed          false
+version            1
+============== Secret Path ==============
+secret/data/restricted/config/app-config
+
+======= Metadata =======
+Key                Value
+---                -----
+created_time       2025-05-14T14:54:18.459228034Z
+custom_metadata    <nil>
+deletion_time      n/a
+destroyed          false
+version            1
+~/temp-clone/vault-python master ❯
