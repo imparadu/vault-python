@@ -45,22 +45,16 @@ if [ -z "$N" ] || [ -z "$E" ]; then
   kill $VAULT_PID
   exit 1
 fi
-# Convert JWKS to DER format using Python
-DER=$(python3 -c "
-import base64, binascii
-n = base64.urlsafe_b64decode('$N' + '==' * (-len('$N') % 4))
-e = base64.urlsafe_b64decode('$E' + '==' * (-len('$E') % 4))
-n_bytes = int(binascii.hexlify(n), 16).to_bytes((len(n) * 8 + 7) // 8, 'big')
-e_bytes = int(binascii.hexlify(e), 16).to_bytes((len(e) * 8 + 7) // 8, 'big')
-der = b'\x30' + bytes([len(n_bytes) + len(e_bytes) + 4]) + b'\x02' + bytes([len(n_bytes)]) + n_bytes + b'\x02' + bytes([len(e_bytes)]) + e_bytes
-print(base64.b64encode(der).decode())
-")
-if [ $? -ne 0 ] || [ -z "$DER" ]; then
-  echo "Error: Failed to convert JWKS to DER format"
-  cat /tmp/vault.log
-  kill $VAULT_PID
-  exit 1
-fi
+# Convert base64url to base64
+N_B64=$(echo "$N" | tr '_-' '/+' | fold -w 64)
+E_B64=$(echo "$E" | tr '_-' '/+' | fold -w 64)
+# Create DER file manually
+N_BIN=$(echo "$N_B64" | base64 -d | xxd -p -c 256 | tr -d '\n')
+E_BIN=$(echo "$E_B64" | base64 -d | xxd -p -c 256 | tr -d '\n')
+N_LEN=$(printf "%04x" $(echo "$N_B64" | base64 -d | wc -c) | sed 's/\(..\)\(..\)/\1 \2/')
+E_LEN=$(printf "%02x" $(echo "$E_B64" | base64 -d | wc -c) | sed 's/\(..\)/\1/')
+DER_HEX="30 $(printf "%02x" $((4 + $(echo "$N_B64" | base64 -d | wc -c) + $(echo "$E_B64" | base64 -d | wc -c))) | sed 's/\(..\)/\1/') 02 $N_LEN $N_BIN 02 $E_LEN $E_BIN"
+DER=$(echo "$DER_HEX" | xxd -r -p | base64)
 # Convert DER to PEM using openssl
 PUBKEY=$(echo "$DER" | base64 -d | openssl rsa -pubin -inform DER -outform PEM 2>/dev/null | sed '/^-----/!s/^/  /')
 if [ $? -ne 0 ] || [ -z "$PUBKEY" ]; then
