@@ -28,10 +28,11 @@ done
 echo "Vault is ready, configuring JWT auth and secrets..."
 # Enable JWT auth method
 /bin/vault auth enable jwt
-# Configure JWT auth
+# Configure JWT auth with JWKS
 /bin/vault write auth/jwt/config \
-    oidc_discovery_url="https://dev-93127078.okta.com/oauth2/default" \
-    default_role="okta-user"
+    jwks_url="https://dev-93127078.okta.com/oauth2/default/v1/keys" \
+    default_role="okta-user" \
+    jwks_ca_pem=""
 # Create JWT role
 /bin/vault write auth/jwt/role/okta-user \
     role_type="jwt" \
@@ -40,7 +41,7 @@ echo "Vault is ready, configuring JWT auth and secrets..."
     groups_claim="groups" \
     token_policies="default" \
     policies="default" \
-    claim_mappings.groups="okta_groups"
+    claim_mappings="groups=okta_groups"
 # Create policies
 /bin/vault policy write tier1-policy - <<EOF
 path "secret/data/restricted/api-keys/api-key1" {
