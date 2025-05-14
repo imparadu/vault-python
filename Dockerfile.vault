@@ -1,5 +1,5 @@
 FROM hashicorp/vault:1.15.0
-RUN apk add --no-cache --no-check-certificate curl jq
+RUN apk add --no-cache --no-check-certificate curl jq openssl python3
 COPY vault-init.sh /vault-init.sh
 RUN chmod +x /vault-init.sh
 CMD ["/vault-init.sh"]

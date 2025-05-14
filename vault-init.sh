@@ -26,8 +26,6 @@ until curl -fs http://127.0.0.1:8200/v1/sys/health > /dev/null 2>&1; do
   fi
 done
 echo "Vault is ready, configuring JWT auth and secrets..."
-# Install openssl for key conversion
-apk add --no-cache --no-check-certificate openssl
 # Fetch JWKS manually
 JWKS=$(curl -k https://dev-93127078.okta.com/oauth2/default/v1/keys)
 if [ $? -ne 0 ]; then
@@ -45,24 +43,18 @@ if [ -z "$N" ] || [ -z "$E" ]; then
   kill $VAULT_PID
   exit 1
 fi
-# Convert base64url to base64 and add padding
-N_B64=$(echo "$N" | tr '_-' '/+' | sed -E 's/.{0,2}$/&==/g')
-E_B64=$(echo "$E" | tr '_-' '/+' | sed -E 's/.{0,2}$/&==/g')
-# Create DER file manually
-N_BIN=$(echo "$N_B64" | base64 -d | xxd -p -c 256 | tr -d '\n')
-E_BIN=$(echo "$E_B64" | base64 -d | xxd -p -c 256 | tr -d '\n')
-if [ -z "$N_BIN" ] || [ -z "$E_BIN" ]; then
-  echo "Error: Failed to decode base64 to binary"
-  cat /tmp/vault.log
-  kill $VAULT_PID
-  exit 1
-fi
-N_LEN=$(printf "%04x" $(echo "$N_B64" | base64 -d | wc -c) | sed 's/\(..\)\(..\)/\1 \2/')
-E_LEN=$(printf "%02x" $(echo "$E_B64" | base64 -d | wc -c) | sed 's/\(..\)/\1/')
-DER_HEX="30 $(printf "%02x" $((4 + $(echo "$N_B64" | base64 -d | wc -c) + $(echo "$E_B64" | base64 -d | wc -c))) | sed 's/\(..\)/\1/') 02 $N_LEN $N_BIN 02 $E_LEN $E_BIN"
-DER=$(echo "$DER_HEX" | xxd -r -p | base64)
-if [ -z "$DER" ]; then
-  echo "Error: Failed to generate DER hex"
+# Convert JWKS to DER format using Python
+DER=$(python3 -c "
+import base64, binascii
+n = base64.urlsafe_b64decode('$N' + '==' * (-len('$N') % 4))
+e = base64.urlsafe_b64decode('$E' + '==' * (-len('$E') % 4))
+n_bytes = int(binascii.hexlify(n), 16).to_bytes((len(n) * 8 + 7) // 8, 'big')
+e_bytes = int(binascii.hexlify(e), 16).to_bytes((len(e) * 8 + 7) // 8, 'big')
+der = b'\x30' + bytes([len(n_bytes) + len(e_bytes) + 4]) + b'\x02' + bytes([len(n_bytes)]) + n_bytes + b'\x02' + bytes([len(e_bytes)]) + e_bytes
+print(base64.b64encode(der).decode())
+")
+if [ $? -ne 0 ] || [ -z "$DER" ]; then
+  echo "Error: Failed to convert JWKS to DER format"
   cat /tmp/vault.log
   kill $VAULT_PID
   exit 1
