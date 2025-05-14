@@ -33,7 +33,7 @@ OKTA_JWKS_URL = f'{OKTA_ISSUER}/v1/keys'
 
 def verify_jwt(token):
     try:
-        response = requests.get(OKTA_JWKS_URL)
+        response = requests.get(OKTA_JWKS_URL, verify=False)
         if response.status_code != 200:
             logging.error(f'Failed to fetch JWKS: {response.status_code} {response.reason} for url: {OKTA_JWKS_URL}')
             return None
