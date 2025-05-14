@@ -1,10 +1,8 @@
-FROM hashicorp/vault:1.14.0
-RUN apk add --no-cache wget && \
-    wget --no-check-certificate \
-        https://dl-cdn.alpinelinux.org/alpine/v3.15/main/x86_64/curl-8.5.0-r0.apk \
-        https://dl-cdn.alpinelinux.org/alpine/v3.15/community/x86_64/jq-1.6-r1.apk && \
-    apk add --allow-untrusted curl-8.5.0-r0.apk jq-1.6-r1.apk && \
-    rm curl-8.5.0-r0.apk jq-1.6-r1.apk
-COPY vault-init.sh /vault-init.sh
-RUN chmod +x /vault-init.sh
-CMD ["/vault-init.sh"]
+ > [frontend 4/5] RUN npm install:
+76.42 npm error Exit handler never called!
+76.42 npm error This is an error with npm itself. Please report this error at:
+76.42 npm error   <https://github.com/npm/cli/issues>
+76.42 npm error A complete log of this run can be found in: /root/.npm/_logs/2025-05-14T14_07_09_799Z-debug-0.log
+------
+failed to solve: process "/bin/sh -c npm install" did not complete successfully: exit code: 1
+~/temp-clone/vault-python master !1 ❯                                                          
