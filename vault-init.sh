@@ -46,12 +46,17 @@ fi
 # Convert JWKS to DER format using Python
 DER=$(python3 -c "
 import base64, binascii
+def encode_length(length):
+    if length < 128:
+        return bytes([length])
+    length_bytes = length.to_bytes((length.bit_length() + 7) // 8, 'big')
+    return bytes([0x80 | len(length_bytes)]) + length_bytes
 n = base64.urlsafe_b64decode('$N' + '==' * (-len('$N') % 4))
 e = base64.urlsafe_b64decode('$E' + '==' * (-len('$E') % 4))
 n_bytes = int(binascii.hexlify(n), 16).to_bytes((len(n) * 8 + 7) // 8, 'big')
 e_bytes = int(binascii.hexlify(e), 16).to_bytes((len(e) * 8 + 7) // 8, 'big')
-der = b'\x30' + bytes([len(n_bytes) + len(e_bytes) + 4]) + b'\x02' + bytes([len(n_bytes)]) + n_bytes + b'\x02' + bytes([len(e_bytes)]) + e_bytes
-print(base64.b64encode(der).decode())
+seq = b'\x30' + encode_length(4 + len(n_bytes) + len(e_bytes)) + b'\x02' + encode_length(len(n_bytes)) + n_bytes + b'\x02' + encode_length(len(e_bytes)) + e_bytes
+print(base64.b64encode(seq).decode())
 ")
 if [ $? -ne 0 ] || [ -z "$DER" ]; then
   echo "Error: Failed to convert JWKS to DER format"
