@@ -1,8 +1,7 @@
- > [frontend 4/5] RUN npm install:
-76.42 npm error Exit handler never called!
-76.42 npm error This is an error with npm itself. Please report this error at:
-76.42 npm error   <https://github.com/npm/cli/issues>
-76.42 npm error A complete log of this run can be found in: /root/.npm/_logs/2025-05-14T14_07_09_799Z-debug-0.log
-------
-failed to solve: process "/bin/sh -c npm install" did not complete successfully: exit code: 1
-~/temp-clone/vault-python master !1 ❯                                                          
+backend-1   | ERROR:root:JWT verification failed: HTTPSConnectionPool(host='dev-93127078.okta.com', port=443): Max retries exceeded with url: /oauth2/default/v1/keys (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain (_ssl.c:1016)')))
+backend-1   | ERROR:root:JWT verification failed: HTTPSConnectionPool(host='dev-93127078.okta.com', port=443): Max retries exceeded with url: /oauth2/default/v1/keys (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain (_ssl.c:1016)')))
+backend-1   | ERROR:root:Token verification failed
+backend-1   | ERROR:root:Token verification failed
+backend-1   | INFO:werkzeug:192.168.65.1 - - [14/May/2025 14:46:17] "GET /secrets HTTP/1.1" 401 -
+backend-1   | INFO:werkzeug:192.168.65.1 - - [14/May/2025 14:46:17] "GET /secrets HTTP/1.1" 401 -
+
