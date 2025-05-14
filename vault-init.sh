@@ -26,6 +26,8 @@ until curl -fs http://127.0.0.1:8200/v1/sys/health > /dev/null 2>&1; do
   fi
 done
 echo "Vault is ready, configuring JWT auth and secrets..."
+# Install openssl for key conversion
+apk add --no-cache --no-check-certificate openssl
 # Fetch JWKS manually
 JWKS=$(curl -k https://dev-93127078.okta.com/oauth2/default/v1/keys)
 if [ $? -ne 0 ]; then
@@ -34,10 +36,35 @@ if [ $? -ne 0 ]; then
   kill $VAULT_PID
   exit 1
 fi
-# Extract the first public key (PEM format)
-PUBKEY=$(echo "$JWKS" | jq -r '.keys[0] | "-----BEGIN PUBLIC KEY-----\n" + .x5c[0] + "\n-----END PUBLIC KEY-----"')
-if [ -z "$PUBKEY" ]; then
-  echo "Error: Failed to extract public key from JWKS"
+# Extract modulus (n) and exponent (e) from JWKS
+N=$(echo "$JWKS" | jq -r '.keys[0].n')
+E=$(echo "$JWKS" | jq -r '.keys[0].e')
+if [ -z "$N" ] || [ -z "$E" ]; then
+  echo "Error: Failed to extract n or e from JWKS"
+  cat /tmp/vault.log
+  kill $VAULT_PID
+  exit 1
+fi
+# Convert JWKS to DER format using Python
+DER=$(python3 -c "
+import base64, binascii
+n = base64.urlsafe_b64decode('$N' + '==' * (-len('$N') % 4))
+e = base64.urlsafe_b64decode('$E' + '==' * (-len('$E') % 4))
+n_bytes = int(binascii.hexlify(n), 16).to_bytes((len(n) * 8 + 7) // 8, 'big')
+e_bytes = int(binascii.hexlify(e), 16).to_bytes((len(e) * 8 + 7) // 8, 'big')
+der = b'\x30' + bytes([len(n_bytes) + len(e_bytes) + 4]) + b'\x02' + bytes([len(n_bytes)]) + n_bytes + b'\x02' + bytes([len(e_bytes)]) + e_bytes
+print(base64.b64encode(der).decode())
+")
+if [ $? -ne 0 ] || [ -z "$DER" ]; then
+  echo "Error: Failed to convert JWKS to DER format"
+  cat /tmp/vault.log
+  kill $VAULT_PID
+  exit 1
+fi
+# Convert DER to PEM using openssl
+PUBKEY=$(echo "$DER" | base64 -d | openssl rsa -pubin -inform DER -outform PEM 2>/dev/null | sed '/^-----/!s/^/  /')
+if [ $? -ne 0 ] || [ -z "$PUBKEY" ]; then
+  echo "Error: Failed to convert DER to PEM format"
   cat /tmp/vault.log
   kill $VAULT_PID
   exit 1
