@@ -45,16 +45,28 @@ if [ -z "$N" ] || [ -z "$E" ]; then
   kill $VAULT_PID
   exit 1
 fi
-# Convert base64url to base64
-N_B64=$(echo "$N" | tr '_-' '/+' | fold -w 64)
-E_B64=$(echo "$E" | tr '_-' '/+' | fold -w 64)
+# Convert base64url to base64 and add padding
+N_B64=$(echo "$N" | tr '_-' '/+' | sed -E 's/.{0,2}$/&==/g')
+E_B64=$(echo "$E" | tr '_-' '/+' | sed -E 's/.{0,2}$/&==/g')
 # Create DER file manually
 N_BIN=$(echo "$N_B64" | base64 -d | xxd -p -c 256 | tr -d '\n')
 E_BIN=$(echo "$E_B64" | base64 -d | xxd -p -c 256 | tr -d '\n')
+if [ -z "$N_BIN" ] || [ -z "$E_BIN" ]; then
+  echo "Error: Failed to decode base64 to binary"
+  cat /tmp/vault.log
+  kill $VAULT_PID
+  exit 1
+fi
 N_LEN=$(printf "%04x" $(echo "$N_B64" | base64 -d | wc -c) | sed 's/\(..\)\(..\)/\1 \2/')
 E_LEN=$(printf "%02x" $(echo "$E_B64" | base64 -d | wc -c) | sed 's/\(..\)/\1/')
 DER_HEX="30 $(printf "%02x" $((4 + $(echo "$N_B64" | base64 -d | wc -c) + $(echo "$E_B64" | base64 -d | wc -c))) | sed 's/\(..\)/\1/') 02 $N_LEN $N_BIN 02 $E_LEN $E_BIN"
 DER=$(echo "$DER_HEX" | xxd -r -p | base64)
+if [ -z "$DER" ]; then
+  echo "Error: Failed to generate DER hex"
+  cat /tmp/vault.log
+  kill $VAULT_PID
+  exit 1
+fi
 # Convert DER to PEM using openssl
 PUBKEY=$(echo "$DER" | base64 -d | openssl rsa -pubin -inform DER -outform PEM 2>/dev/null | sed '/^-----/!s/^/  /')
 if [ $? -ne 0 ] || [ -z "$PUBKEY" ]; then
